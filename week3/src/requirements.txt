@@ -1,2 +1,31 @@
-numpy
-matplotlib
+import requests
+import parsel
+import matplotlib.pyplot as plt
+from datetime import datetime
+
+headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Referer": "https://tianqi.2345.com/"
+}
+
+response = requests.get(
+    "https://tianqi.2345.com/Pc/GetHistory?areaInfo%5BareaId%5D=54511&areaInfo%5BareaType%5D=2&date%5Byear%5D=2024&date%5Bmonth%5D=7",
+    headers=headers)
+
+print("HTTP 状态码:", response.status_code)
+
+if response.status_code == 200:
+    json_data = response.json()
+    html_data = json_data['data']
+    selector = parsel.Selector(html_data)
+
+    dates = []
+    high_temperatures = []
+    low_temperatures = []
+
+    for tr in selector.css('tr')[1:]:
+        td = tr.css('td::text').getall()
+        if len(td) >= 3:
+            date_str = td[0].strip()
+            high_temp_str = td[1].strip('°')
+            low_temp_str = td[2].strip('°')
